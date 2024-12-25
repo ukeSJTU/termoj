@@ -1,0 +1,74 @@
+"""
+Main CLI entry point for the ACM-OJ tool.
+"""
+
+import click
+
+from . import __version__
+from .api_client import APIClient
+from .commands.auth import auth
+from .commands.course import course
+from .commands.problem import problem
+from .commands.problemset import problemset
+from .commands.submission import submission
+from .commands.user import user
+from .context import Context
+
+
+class CustomGroup(click.Group):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.context_settings = {
+            "help_option_names": ["-h", "--help"],
+            # "version_option_names": ["-v", "--version"],
+        }
+
+
+@click.group(cls=CustomGroup)
+@click.version_option(version=__version__)
+@click.pass_context
+def cli(ctx: click.Context):
+    """ACM Online Judge CLI tool.
+
+    A command-line interface for interacting with the ACM-OJ platform.
+
+    Common commands:
+    - auth login: Log in using your personal access token
+    - auth whoami: Show current user information
+    - auth logout: Log out and clear token
+
+    - user courses: List enrolled courses
+    - user problemsets: List enrolled problemsets
+
+    - problem show: Show problem details
+    - problem submit: Submit a solution
+
+    - problemset list: List available problems
+
+    - submission status: Check submission status
+    - submission list: List your submissions
+
+    - course list: List available courses
+    - course enrolled: List enrolled courses
+    - course show: Show course details
+    - course join: Join a course
+    - course problemsets: List course problemsets
+
+    Run 'termoj COMMAND --help' for more information on a command.
+    """
+    ctx.obj = Context()
+    # Initialize API client
+    ctx.obj.api_client = APIClient()
+
+
+# Register command groups
+cli.add_command(auth)
+cli.add_command(user)
+cli.add_command(problem)
+cli.add_command(problemset)
+cli.add_command(submission)
+cli.add_command(course)
+
+
+if __name__ == "__main__":
+    cli()

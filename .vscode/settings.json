@@ -1,0 +1,75 @@
+{
+    // ✅ Python Interpreter
+    "python.defaultInterpreterPath": "python",
+
+    // ✅ Enable Linting
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+
+    // ✅ Code Formatting with Black
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": [
+        "--line-length", "88"
+    ],
+
+    // ✅ Import Sorting with Isort
+    "python.sortImports.path": "isort",
+    "python.sortImports.args": ["--profile", "black"],
+
+    // ✅ Format on Save
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "always"
+    },
+
+    // ✅ Enable Pytest
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+
+    // ✅ Enable Test Coverage
+    "python.testing.unittestEnabled": false,
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+
+    // ✅ Enable Type Checking with Mypy
+    "python.analysis.typeCheckingMode": "basic",
+
+    // ✅ Exclude Folders from Search, Linting, and Formatting
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.git": true,
+        "**/.mypy_cache": true,
+        "**/.venv": true,
+        "**/venv": true,
+        "**/build": true,
+        "**/dist": true
+    },
+
+    // ✅ Workspace Settings
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+
+    // ✅ Terminal Settings
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+
+    // ✅ Git Integration
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+
+    // ✅ Editor Settings
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": true,
+    "editor.wordWrap": "on",
+    "editor.rulers": [88],
+    "editor.cursorBlinking": "smooth",
+
+    // ✅ Testing Output Panel
+    "testing.automaticallyOpenPeekView": "never"
+}
