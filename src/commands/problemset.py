@@ -31,7 +31,9 @@ def list(ctx: Context):
             return
 
         # Sort problemsets by ID in ascending order
-        problemsets = sorted(problemsets, key=lambda ps: ps.id)
+        problemsets = sorted(
+            problemsets, key=lambda ps: ps.id if ps.id is not None else float("inf")
+        )
 
         table = Table(
             title="Your Problemsets",

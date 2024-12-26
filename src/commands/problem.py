@@ -141,7 +141,7 @@ def show(ctx: Context, problem_id: int):
         if problem.languages_accepted:
             console.print()
             console.print(Rule(style="dim"))
-            langs = ", ".join(problem.languages_accepted)
+            langs = ", ".join(str(lang) for lang in problem.languages_accepted)
             lang_panel = Panel(
                 f"[green]{langs}[/green]",
                 title="[bold blue]Accepted Languages[/bold blue]",
