@@ -9,19 +9,20 @@ description = "A terminal cli tool for SJTU ACM-OJ platform. Built with click an
 authors = [{ name = "uke", email = "uke_sjtu@sjtu.edu.cn" }]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
-dependencies = ["click>=8.0", "rich>=13.0", "pylatexenc>=2.0"]
+requires-python = ">=3.8,<3.12"
+dependencies = ["click>=8.0", "rich>=13.0", "pylatexenc>=2.10", "requests>=2.0"]
 
 [project.scripts]
 termoj = "src.cli:cli"
 
 [project.optional-dependencies]
 dev = [
-    "black==24.3.0",
-    "isort==5.12.0",
-    "pytest==7.4.0",
-    "pytest-cov==4.1.0",
-    "tox",
+    "black~=24.3.0",     # Compatible with all 24.3.x versions
+    "isort~=5.12.0",     # Compatible with all 5.12.x versions
+    "pytest~=7.4.0",     # Compatible with all 7.4.x versions
+    "pytest-cov~=4.1.0", # Compatible with all 4.1.x versions
+    "tox~=4.23.0",       # Compatible with all 4.23.x versions
+    "pydantic~=2.10.0",  # Compatible with all 2.10.x versions
 ]
 
 [tool.black]
