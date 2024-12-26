@@ -6,13 +6,9 @@ import time
 from typing import List, Optional
 
 import click
-from rich.console import Console
-from rich.table import Table
 
 from ..context import Context
 from ..models import Profile, Submission, SubmissionBrief
-
-consoel = Console()
 
 
 @click.group()
@@ -43,37 +39,38 @@ def status(ctx: Context, submission_id: int, watch: bool, interval: int):
 
     def display_status(submission: Submission):
         """Helper function to display submission status."""
-        click.echo(f"\nSubmission {submission.id}:")
-        click.echo("-" * 40)
-        click.echo(f"Status: {submission.status.value if submission.status else 'N/A'}")
+        headers = ["Attribute", "Value"]
+        rows = [
+            ["ID", submission.id],
+            ["Status", submission.status.value if submission.status else "N/A"],
+        ]
 
         if submission.score is not None and submission.should_show_score:
-            click.echo(f"Score: {submission.score}")
+            rows.append(["Score", submission.score])
 
         if submission.time_msecs is not None:
-            click.echo(f"Time: {submission.time_msecs} ms")
+            rows.append(["Time", f"{submission.time_msecs} ms"])
 
         if submission.memory_bytes is not None:
             memory_mb = submission.memory_bytes / (1024 * 1024)
-            click.echo(f"Memory: {memory_mb:.2f} MB")
+            rows.append(["Memory", f"{memory_mb:.2f} MB"])
 
         if submission.message:
-            click.echo(f"\nMessage:\n{submission.message}")
+            rows.append(["Message", submission.message])
 
         if submission.details:
-            click.echo("\nTest Cases:")
-            tests = submission.details.get("tests", [])
-            for i, test in enumerate(tests, 1):
-                click.echo(f"\nTest {i}:")
-                status = test["status"] if "status" in test else "Unknown"
-                click.echo(f"Status: {status}")
+            test_cases = submission.details.get("tests", [])
+            for i, test in enumerate(test_cases, 1):
+                rows.append([f"Test {i} Status", test.get("status", "Unknown")])
                 if "time_msecs" in test:
-                    click.echo(f"Time: {test['time_msecs']} ms")
+                    rows.append([f"Test {i} Time", f"{test['time_msecs']} ms"])
                 if "memory_bytes" in test:
                     memory_mb = test["memory_bytes"] / (1024 * 1024)
-                    click.echo(f"Memory: {memory_mb:.2f} MB")
+                    rows.append([f"Test {i} Memory", f"{memory_mb:.2f} MB"])
                 if "message" in test:
-                    click.echo(f"Message: {test['message']}")
+                    rows.append([f"Test {i} Message", test["message"]])
+
+        ctx.display_table(headers, rows)
 
     try:
         if not watch:
@@ -82,7 +79,7 @@ def status(ctx: Context, submission_id: int, watch: bool, interval: int):
             display_status(submission)
         else:
             # Watch mode - poll until submission is complete
-            click.echo("Watching submission status (Ctrl+C to stop)...")
+            ctx.display_message("Watching submission status (Ctrl+C to stop)...")
             completed_statuses = {
                 "accepted",
                 "wrong_answer",
@@ -104,9 +101,9 @@ def status(ctx: Context, submission_id: int, watch: bool, interval: int):
                 time.sleep(interval)
 
     except KeyboardInterrupt:
-        click.echo("\nStopped watching submission status.")
+        ctx.display_message("Stopped watching submission status.")
     except Exception as e:
-        click.echo(f"Failed to get submission status: {str(e)}", err=True)
+        ctx.display_message(f"Failed to get submission status: {str(e)}")
 
 
 @submission.command()
@@ -140,25 +137,18 @@ def list(
         submissions: List[SubmissionBrief] = ctx.api_client.get_submissions(**params)
 
         if not submissions:
-            click.echo("No submissions found.")
+            ctx.display_message("No submissions found.")
             return
 
-        console = Console()
-        table = Table(
-            title="Recent Submissions",
-            title_style="bold cyan",
-            header_style="bold white",
-            box=None,
-        )
-
-        # Define table columns
-        table.add_column("ID", style="dim", justify="center")
-        table.add_column("Problem ID", justify="center")
-        table.add_column("Problem Title", justify="left")
-        table.add_column("Language", justify="center")
-        table.add_column("Status", justify="center")
-        table.add_column("Created At", justify="center")
-
+        headers = [
+            "ID",
+            "Problem ID",
+            "Problem Title",
+            "Language",
+            "Status",
+            "Created At",
+        ]
+        rows = []
         for sub in submissions:
             problem_id = (
                 str(sub.problem.id) if sub.problem and sub.problem.id else "N/A"
@@ -173,22 +163,22 @@ def list(
                 if sub.created_at
                 else "N/A"
             )
-
-            table.add_row(
-                str(sub.id),
-                problem_id,
-                problem_title,
-                language_text,
-                status_text,
-                created_at,
+            rows.append(
+                [
+                    sub.id,
+                    problem_id,
+                    problem_title,
+                    language_text,
+                    status_text,
+                    created_at,
+                ]
             )
 
-        console.print(table)
+        ctx.display_table(headers, rows)
 
-        # Pagination Handling
         if cursor:
-            click.echo(f"\nNext cursor: {cursor}")
-            click.echo("Use '--cursor <cursor>' to load the next page.")
+            ctx.display_message(f"Next cursor: {cursor}")
+            ctx.display_message("Use '--cursor <cursor>' to load the next page.")
 
     except Exception as e:
-        click.echo(f"Failed to list submissions: {str(e)}", err=True)
+        ctx.display_message(f"Failed to list submissions: {str(e)}")

@@ -20,19 +20,24 @@ def courses(ctx: Context):
     try:
         courses = ctx.api_client.get_user_courses()
         if not courses:
-            click.echo("You are not enrolled in any courses.")
+            ctx.display_message("You are not enrolled in any courses.")
             return
 
-        click.echo("Enrolled courses:")
+        # Display courses in a table format
+        headers = ["ID", "Name", "Term", "Description"]
+        rows = []
         for course in courses:
-            click.echo(f"- {course.name} (ID: {course.id})")
-            if course.term and course.term.name:
-                click.echo(f"  Term: {course.term.name}")
-            if course.description:
-                click.echo(f"  {course.description}")
-            click.echo("")  # Empty line between courses
+            rows.append(
+                [
+                    course.id,
+                    course.name,
+                    course.term.name if course.term else "",
+                    course.description or "",
+                ]
+            )
+        ctx.display_table(headers, rows)
     except Exception as e:
-        click.echo(f"Failed to fetch courses: {str(e)}", err=True)
+        ctx.display_message(f"Failed to fetch courses: {str(e)}")
 
 
 @user.command()
@@ -42,19 +47,29 @@ def problemsets(ctx: Context):
     try:
         problemsets = ctx.api_client.get_user_problemsets()
         if not problemsets:
-            click.echo("You are not enrolled in any problemsets.")
+            ctx.display_message("You are not enrolled in any problemsets.")
             return
 
-        click.echo("Enrolled problemsets:")
+        # Display problemsets in a table format
+        headers = ["ID", "Type", "Name", "Course", "Period", "Description"]
+        rows = []
         for ps in problemsets:
             ps_type = ps.type.value.title() if ps.type else "Unknown"
-            click.echo(f"- [{ps_type}] {ps.name} (ID: {ps.id})")
-            if ps.course and ps.course.name:
-                click.echo(f"  Course: {ps.course.name}")
-            if ps.start_time and ps.end_time:
-                click.echo(f"  Period: {ps.start_time} to {ps.end_time}")
-            if ps.description:
-                click.echo(f"  {ps.description}")
-            click.echo("")  # Empty line between problemsets
+            period = (
+                f"{ps.start_time} to {ps.end_time}"
+                if ps.start_time and ps.end_time
+                else ""
+            )
+            rows.append(
+                [
+                    ps.id,
+                    ps_type,
+                    ps.name,
+                    ps.course.name if ps.course else "",
+                    period,
+                    ps.description or "",
+                ]
+            )
+        ctx.display_table(headers, rows)
     except Exception as e:
-        click.echo(f"Failed to fetch problemsets: {str(e)}", err=True)
+        ctx.display_message(f"Failed to fetch problemsets: {str(e)}")

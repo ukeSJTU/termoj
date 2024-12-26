@@ -18,7 +18,10 @@ class Config:
         self.config_dir = Path.home() / ".termoj"
         self.config_file = self.config_dir / "config.json"
         self.logs_dir = self.config_dir / "logs"
-        self._config: Dict = {}
+        self._config: Dict = {
+            "token": None,
+            "display_mode": "rich",
+        }
         # Create config directory first
         self.config_dir.mkdir(exist_ok=True)
         self._load_config()
@@ -73,4 +76,17 @@ class Config:
     def token(self, value: Optional[str]):
         """Store authentication token."""
         self._config["token"] = value
+        self._save_config()
+
+    @property
+    def display_mode(self) -> str:
+        """Get current display mode."""
+        return self._config.get("display_mode", "rich")
+
+    @display_mode.setter
+    def display_mode(self, mode: str) -> None:
+        """Set display mode."""
+        if mode not in ["plain", "rich", "cartoon"]:
+            raise ValueError(f"Invalid display mode: {mode}")
+        self._config["display_mode"] = mode
         self._save_config()

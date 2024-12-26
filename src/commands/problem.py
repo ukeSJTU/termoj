@@ -8,6 +8,7 @@ from typing import Optional
 import click
 from pylatexenc.latex2text import LatexNodes2Text
 from rich.box import ROUNDED, SIMPLE
+from rich.columns import Columns
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -56,100 +57,135 @@ def show(ctx: Context, problem_id: int):
     try:
         problem = ctx.api_client.get_problem(problem_id)
 
-        # Display problem title in a fancy panel
-        title_panel = Panel(
-            f"Problem {problem.id}: {problem.title}",
-            style="bold blue",
-            box=ROUNDED,
-            border_style="blue",
-        )
-        console.print()
-        console.print(title_panel)
-
-        # Process and display description with markdown and LaTeX support
-        if problem.description:
-            console.print()
-            console.print(Rule(style="dim"))
-            console.print("\n[bold blue]Description[/bold blue]")
-            md_text = process_latex(problem.description)
-            console.print(Markdown(md_text))
-
-        # Process and display input format
-        if problem.input:
-            console.print()
-            console.print(Rule(style="dim"))
-            console.print("\n[bold blue]Input Format[/bold blue]")
-            md_text = process_latex(problem.input)
-            console.print(Markdown(md_text))
-
-        # Process and display output format
-        if problem.output:
-            console.print()
-            console.print(Rule(style="dim"))
-            console.print("\n[bold blue]Output Format[/bold blue]")
-            md_text = process_latex(problem.output)
-            console.print(Markdown(md_text))
-
-        # Display examples in panels with syntax highlighting
-        if problem.examples:
-            console.print()
-            console.print(Rule(style="dim"))
-            console.print("\n[bold blue]Examples[/bold blue]")
-
-            for i, example in enumerate(problem.examples, 1):
-                console.print(f"\n[bold cyan]Example {i}[/bold cyan]")
-
-                if example.input:
-                    input_panel = Panel(
-                        format_code_block(example.input),
-                        title="[bold cyan]Input[/bold cyan]",
-                        box=SIMPLE,
-                        padding=(1, 2),
-                    )
-                    console.print(input_panel)
-
-                if example.output:
-                    output_panel = Panel(
-                        format_code_block(example.output),
-                        title="[bold cyan]Output[/bold cyan]",
-                        box=SIMPLE,
-                        padding=(1, 2),
-                    )
-                    console.print(output_panel)
-
-                if example.description:
-                    explanation_panel = Panel(
-                        Markdown(process_latex(example.description)),
-                        title="[bold cyan]Explanation[/bold cyan]",
-                        box=SIMPLE,
-                        padding=(1, 2),
-                    )
-                    console.print(explanation_panel)
-
-        # Process and display constraints
-        if problem.data_range:
-            console.print()
-            console.print(Rule(style="dim"))
-            console.print("\n[bold blue]Constraints[/bold blue]")
-            md_text = process_latex(problem.data_range)
-            constraints_panel = Panel(
-                Markdown(md_text), box=SIMPLE, padding=(1, 2), border_style="blue"
+        # --- HEADER ---
+        console.print(
+            Panel(
+                f"[bold blue]Problem {problem.id}: {problem.title}[/bold blue]",
+                border_style="blue",
+                expand=True,
             )
-            console.print(constraints_panel)
+        )
+        console.print(Rule(style="blue"))
 
-        # Display accepted languages in a panel
-        if problem.languages_accepted:
-            console.print()
-            console.print(Rule(style="dim"))
-            langs = ", ".join(str(lang) for lang in problem.languages_accepted)
-            lang_panel = Panel(
-                f"[green]{langs}[/green]",
-                title="[bold blue]Accepted Languages[/bold blue]",
-                box=ROUNDED,
+        # --- DESCRIPTION ---
+        description_text = process_latex(
+            problem.description or "No description provided."
+        )
+        console.print(
+            Panel(
+                Markdown(description_text),
+                title="[bold cyan]Description[/bold cyan]",
+                border_style="cyan",
+                expand=False,
                 padding=(1, 2),
             )
-            console.print("\n", lang_panel)
-            console.print()
+        )
+
+        # --- INPUT & OUTPUT FORMAT ---
+        input_text = process_latex(problem.input or "No input format provided.")
+        output_text = process_latex(problem.output or "No output format provided.")
+
+        console.print(
+            Columns(
+                [
+                    Panel(
+                        Markdown(input_text),
+                        title="[bold green]Input Format[/bold green]",
+                        border_style="green",
+                        padding=(1, 2),
+                        expand=True,
+                    ),
+                    Panel(
+                        Markdown(output_text),
+                        title="[bold yellow]Output Format[/bold yellow]",
+                        border_style="yellow",
+                        padding=(1, 2),
+                        expand=True,
+                    ),
+                ],
+                equal=True,
+                expand=True,
+            )
+        )
+
+        # --- CONSTRAINTS & LANGUAGES ---
+        constraints_text = process_latex(
+            problem.data_range or "No constraints provided."
+        )
+        languages_text = (
+            ", ".join(str(lang) for lang in problem.languages_accepted)
+            if problem.languages_accepted
+            else "No languages specified."
+        )
+
+        console.print(
+            Columns(
+                [
+                    Panel(
+                        Markdown(constraints_text),
+                        title="[bold magenta]Constraints[/bold magenta]",
+                        border_style="magenta",
+                        padding=(1, 2),
+                        expand=True,
+                    ),
+                    Panel(
+                        f"[green]{languages_text}[/green]",
+                        title="[bold blue]Accepted Languages[/bold blue]",
+                        border_style="blue",
+                        padding=(1, 2),
+                        expand=True,
+                    ),
+                ],
+                equal=True,
+                expand=True,
+            )
+        )
+
+        # --- EXAMPLES (Side by Side per Test Case) ---
+        console.print(Rule(style="cyan"))
+        console.print("[bold cyan]Examples[/bold cyan]")
+
+        if problem.examples:
+            for i, example in enumerate(problem.examples, start=1):
+                input_example = example.input or "No Input Provided"
+                output_example = example.output or "No Output Provided"
+                explanation = example.description or ""
+
+                console.print(
+                    Columns(
+                        [
+                            Panel(
+                                format_code_block(input_example),
+                                title=f"[bold cyan]Example {i} - Input[/bold cyan]",
+                                border_style="cyan",
+                                padding=(1, 2),
+                                expand=True,
+                            ),
+                            Panel(
+                                format_code_block(output_example),
+                                title=f"[bold cyan]Example {i} - Output[/bold cyan]",
+                                border_style="cyan",
+                                padding=(1, 2),
+                                expand=True,
+                            ),
+                        ],
+                        equal=True,
+                        expand=True,
+                    )
+                )
+
+                if explanation:
+                    console.print(
+                        Panel(
+                            Markdown(process_latex(explanation)),
+                            title="[bold cyan]Explanation[/bold cyan]",
+                            border_style="cyan",
+                            padding=(1, 2),
+                        )
+                    )
+                console.print(Rule(style="cyan"))
+        else:
+            console.print("[italic]No examples provided.[/italic]")
 
     except Exception as e:
         console.print(f"[red]Failed to fetch problem details: {str(e)}[/red]")
@@ -177,16 +213,13 @@ def submit(ctx: Context, problem_id: int, file: str, language: str):
         submission_id = result.id
 
         if submission_id:
-            success_panel = Panel(
-                f"[green]Solution submitted successfully![/green]\n"
-                f"[cyan]Submission ID:[/cyan] {submission_id}\n"
-                f"[dim]Use 'termoj submission status {submission_id}' to check the result.[/dim]",
-                box=ROUNDED,
-                border_style="green",
+            ctx.display_message(
+                f"Solution submitted successfully!\n"
+                f"Submission ID: {submission_id}\n"
+                f"Use 'termoj submission status {submission_id}' to check the result."
             )
-            console.print(success_panel)
         else:
-            console.print("[red]Submission failed: No submission ID received.[/red]")
+            ctx.display_message("Submission failed: No submission ID received.")
 
     except Exception as e:
-        console.print(f"[red]Submission failed: {str(e)}[/red]")
+        ctx.display_message(f"Submission failed: {str(e)}")

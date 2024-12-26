@@ -7,6 +7,7 @@ import click
 from . import __version__
 from .api_client import APIClient
 from .commands.auth import auth
+from .commands.config import config
 from .commands.course import course
 from .commands.problem import problem
 from .commands.problemset import problemset
@@ -37,6 +38,15 @@ def cli(ctx: click.Context):
     A command-line interface for interacting with the ACM-OJ platform.
 
     Common commands:
+    - config view: View all configuration settings
+    - config get <option>: View a specific configuration option
+    - config set <option> <value>: Set a configuration option
+    - config reset: Reset to default settings
+    - config init: Initialize configuration
+
+    Configuration options:
+    - display_mode: Control output style (plain/rich/cartoon)
+
     - auth login: Log in using your personal access token
     - auth whoami: Show current user information
     - auth logout: Log out and clear token
@@ -67,6 +77,7 @@ def cli(ctx: click.Context):
 
 # Register command groups
 cli.add_command(auth)
+cli.add_command(config)
 cli.add_command(user)
 cli.add_command(problem)
 cli.add_command(problemset)

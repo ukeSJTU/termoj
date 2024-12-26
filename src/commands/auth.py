@@ -26,9 +26,9 @@ def login(ctx: Context, token: str):
         ctx.api_client.set_token(token)
         # Verify token by getting profile
         profile = ctx.api_client.get_profile()
-        click.echo(f"Successfully logged in as {profile.username}!")
+        ctx.display_message(f"Successfully logged in as {profile.username}!")
     except Exception as e:
-        click.echo(f"Login failed: {str(e)}", err=True)
+        ctx.display_message(f"Login failed: {str(e)}")
 
 
 @auth.command()
@@ -37,18 +37,23 @@ def whoami(ctx: Context):
     """Show current user information."""
     try:
         profile = ctx.api_client.get_profile()
-        click.echo(f"Logged in as: {profile.username}")
-        if profile.friendly_name != None:
-            click.echo(f"Name: {profile.friendly_name}")
-        if profile.student_id != None:
-            click.echo(f"Student ID: {profile.student_id}")
+        headers = ["Attribute", "Value"]
+        rows = [
+            ["Username", profile.username],
+            ["Name", profile.friendly_name or "N/A"],
+            ["Student ID", profile.student_id or "N/A"],
+        ]
+        ctx.display_table(headers, rows)
     except Exception as e:
-        click.echo("Not logged in or session expired.", err=True)
+        ctx.display_message("Not logged in or session expired.")
 
 
 @auth.command()
 @click.pass_obj
 def logout(ctx: Context):
     """Log out by clearing the stored token."""
-    ctx.api_client.clear_token()
-    click.echo("Successfully logged out!")
+    try:
+        ctx.api_client.clear_token()
+        ctx.display_message("Successfully logged out!")
+    except Exception as e:
+        ctx.display_message(f"Logout failed: {str(e)}")
