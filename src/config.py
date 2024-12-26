@@ -19,6 +19,8 @@ class Config:
         self.config_file = self.config_dir / "config.json"
         self.logs_dir = self.config_dir / "logs"
         self._config: Dict = {}
+        # Create config directory first
+        self.config_dir.mkdir(exist_ok=True)
         self._load_config()
         self._setup_logging()
 
