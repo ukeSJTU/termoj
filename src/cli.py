@@ -20,12 +20,16 @@ class CustomGroup(click.Group):
         super().__init__(*args, **kwargs)
         self.context_settings = {
             "help_option_names": ["-h", "--help"],
-            # "version_option_names": ["-v", "--version"],
         }
 
 
 @click.group(cls=CustomGroup)
-@click.version_option(version=__version__)
+@click.version_option(
+    "0.1.0",
+    "-v",
+    "--version",
+    message="%(prog)s, version %(version)s",
+)
 @click.pass_context
 def cli(ctx: click.Context):
     """ACM Online Judge CLI tool.
