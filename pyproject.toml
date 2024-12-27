@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "termoj"
-version = "0.1.1"
+version = "0.1.2"
 description = "A terminal cli tool for SJTU ACM-OJ platform. Built with click and rich."
 authors = [{ name = "uke", email = "uke_sjtu@sjtu.edu.cn" }]
 readme = "README.md"
@@ -59,6 +59,7 @@ addopts = """
     -v
 """
 
-[tool.setuptools]
-packages = ["src"]
-package-dir = { "" = "." }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
