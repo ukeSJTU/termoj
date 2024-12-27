@@ -5,7 +5,6 @@ UI controller for the ACM-OJ CLI tool.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
-import markdown
 from rich import print as rich_print
 from rich.console import Console
 from rich.markdown import Markdown
